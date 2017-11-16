@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACHGenerator", "ACHGenerator\ACHGenerator.csproj", "{BF49E3B8-0BAD-4109-907E-60D50EF9ADC1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ACHFileGeneratorConsole", "ACHFileGeneratorConsole\ACHFileGeneratorConsole.csproj", "{E6EE5DBD-8310-4F09-A058-85FAC470D9FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{FA3BA1D7-D373-49E0-9AC4-42CFE9BF1559}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF49E3B8-0BAD-4109-907E-60D50EF9ADC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF49E3B8-0BAD-4109-907E-60D50EF9ADC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF49E3B8-0BAD-4109-907E-60D50EF9ADC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF49E3B8-0BAD-4109-907E-60D50EF9ADC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6EE5DBD-8310-4F09-A058-85FAC470D9FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6EE5DBD-8310-4F09-A058-85FAC470D9FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6EE5DBD-8310-4F09-A058-85FAC470D9FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6EE5DBD-8310-4F09-A058-85FAC470D9FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA3BA1D7-D373-49E0-9AC4-42CFE9BF1559}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA3BA1D7-D373-49E0-9AC4-42CFE9BF1559}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA3BA1D7-D373-49E0-9AC4-42CFE9BF1559}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA3BA1D7-D373-49E0-9AC4-42CFE9BF1559}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
