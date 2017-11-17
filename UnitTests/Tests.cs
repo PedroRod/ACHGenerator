@@ -93,13 +93,13 @@ namespace UnitTests
                 TotalCreditEntryDollarAmount = (decimal) 1500.53,
                 ODFIIdentification = 123456,
                 BatchNumber = 0,
-                CompanyIdentification = 55
+                CompanyIdentification = "1234567890"
             };
 
             var line = generator.GenerateRecordLine(batchControl);
 
             Assert.AreEqual(line,
-                "822500000200000124560000001500530000001500530000000055                         001234560000000");
+                "822500000200000124560000001500530000001500531234567890                         001234560000000");
 
         }
 

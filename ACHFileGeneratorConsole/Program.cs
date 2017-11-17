@@ -62,29 +62,31 @@ namespace ACHFileGeneratorConsole
                                 IndividualIdentificationNumber = "IndiIDNum",
                                 IndividualName = "Pedro Rodriguez",
                                 TraceNumber = "TraceNumber"
+                            },
+                            new EntryDetail
+                            {
+                                TransactionCode = (int) ACHTransactionCode.CreditToChecking,
+                                RDFIIdentification = 654231,
+                                CheckDigit = 1,
+                                DFIAccountNumber = "DFIAccountNum",
+                                Amount = (decimal) 1500.53,
+                                IndividualIdentificationNumber = "IndiIDNum",
+                                IndividualName = "Pedro Rodriguez",
+                                TraceNumber = "TraceNumber"
+                            },
+                            new EntryDetail
+                            {
+                                TransactionCode = (int) ACHTransactionCode.CreditToChecking,
+                                RDFIIdentification = 654231,
+                                CheckDigit = 1,
+                                DFIAccountNumber = "DFIAccountNum",
+                                Amount = (decimal) 1500.53,
+                                IndividualIdentificationNumber = "IndiIDNum",
+                                IndividualName = "Pedro Rodriguez",
+                                TraceNumber = "TraceNumber"
                             }
-                        },
-                        BatchControlRecord = new BatchControl
-                        {
-                            ServiceCode = (int)ACHServiceCode.Debit,
-                            EntryCount = 2,
-                            EntryHash = 12456,
-                            TotalDebitEntryDollarAmount = (decimal) 1500.53,
-                            TotalCreditEntryDollarAmount = (decimal) 1500.53,
-                            ODFIIdentification = 123456,
-                            BatchNumber = 0,
-                            CompanyIdentification = 55
                         }
                     }
-                },
-                FileControlRecord = new FileControl
-                {
-                    BatchCount = 2,
-                    BlockCount = 1,
-                    EntryCount = 1,
-                    EntryHash = 2,
-                    TotalDebitEntryAmount = (decimal)1500.53,
-                    TotalCreditEntryAmount = (decimal)1500.53
                 }
             };
 

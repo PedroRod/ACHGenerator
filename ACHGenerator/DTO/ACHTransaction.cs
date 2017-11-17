@@ -7,10 +7,10 @@ namespace ACHGenerator.DTO
     public class FileHeader : IACHRecord
     {
         [ACHField(Position = 1, Length = 1)]
-        public string RecordTypeCode => "1";
+        private string RecordTypeCode => "1";
 
         [ACHField(Position = 2, Length = 2)]
-        public int PriorityCode => 1;
+        private string PriorityCode => "01";
 
         [ACHField(Position = 4, Length = 10, Format = " {0}")]
         public string ImmidiateDestination { get; set; }
@@ -25,16 +25,16 @@ namespace ACHGenerator.DTO
         public DateTime FileCreationTime { get; set; }
 
         [ACHField(Position = 34, Length = 1)]
-        public string FileIdModifier => "A";
+        private string FileIdModifier => "A";
 
         [ACHField(Position = 35, Length = 3)]
-        public string RecordSize => "094";
+        private string RecordSize => "094";
 
         [ACHField(Position = 38, Length = 2)]
-        public string BlockingFactor => "10";
+        private string BlockingFactor => "10";
 
         [ACHField(Position = 40, Length = 1)]
-        public string FormatCode => "1";
+        private string FormatCode => "1";
 
         [ACHField(Position = 41, Length = 23)]
         public string ImmediateDestinationName { get; set; }
@@ -49,7 +49,7 @@ namespace ACHGenerator.DTO
     public class BatchHeader : IACHRecord
     {
         [ACHField(Position = 1, Length = 1)]
-        public string RecordTypeCode => "5";
+        private string RecordTypeCode => "5";
 
         [ACHField(Position = 2, Length = 3)]
         public int ServiceCode { get; set; }
@@ -76,22 +76,23 @@ namespace ACHGenerator.DTO
         public DateTime EffectiveEntryDate { get; set; }
 
         [ACHField(Position = 76, Length = 3)]
-        public string SettlementDate => "   ";
+        private string SettlementDate => "   ";
 
         [ACHField(Position = 79, Length = 1)]
-        public string OriginatorStatusCode => "1";
+        private string OriginatorStatusCode => "1";
 
         [ACHField(Position = 80, Length = 8)]
         public int ODFIIdentification { get; set; }
 
         [ACHField(Position = 88, Length = 7)]
+
         public int BatchNumber { get; set; }
     }
 
     public class EntryDetail : IACHRecord
     {
         [ACHField(Position = 1, Length = 1)]
-        public int RecordTypeCode => 6;
+        private string RecordTypeCode => "6";
 
         [ACHField(Position = 2, Length = 2)]
         public int TransactionCode { get; set; }
@@ -115,10 +116,10 @@ namespace ACHGenerator.DTO
         public string IndividualName { get; set; }
 
         [ACHField(Position = 77, Length = 2)]
-        public string DiscretionaryData => "  ";
+        private string DiscretionaryData => "  ";
 
         [ACHField(Position = 79, Length = 1)]
-        public string AddendaRecordindicator => "0";
+        private string AddendaRecordindicator => "0";
 
         [ACHField(Position = 80, Length = 15)]
         public string TraceNumber { get; set; }
@@ -127,7 +128,7 @@ namespace ACHGenerator.DTO
     public class BatchControl : IACHRecord
     {
         [ACHField(Position = 1, Length = 1)]
-        public string RecordTypeCode => "8";
+        private string RecordTypeCode => "8";
 
         [ACHField(Position = 2, Length = 3)]
         public int ServiceCode { get; set; }
@@ -145,13 +146,13 @@ namespace ACHGenerator.DTO
         public decimal TotalCreditEntryDollarAmount { get; set; }
 
         [ACHField(Position = 45, Length = 10)]
-        public int CompanyIdentification { get; set; }
+        public string CompanyIdentification { get; set; }
 
         [ACHField(Position = 55, Length = 19)]
-        public string MessageAuthenticationCode => "                   ";
+        private string MessageAuthenticationCode => "                   ";
 
         [ACHField(Position = 74, Length = 6)]
-        public string Filler => "      ";
+        private string Filler => "      ";
 
         [ACHField(Position = 80, Length = 8)]
         public int ODFIIdentification { get; set; }
@@ -163,7 +164,7 @@ namespace ACHGenerator.DTO
     public class FileControl : IACHRecord
     {
         [ACHField(Position = 1, Length = 1)]
-        public string RecordTypeCode => "9";
+        private string RecordTypeCode => "9";
 
         [ACHField(Position = 2, Length = 6)]
         public int BatchCount { get; set; }
@@ -184,7 +185,7 @@ namespace ACHGenerator.DTO
         public decimal TotalCreditEntryAmount { get; set; }
 
         [ACHField(Position = 56, Length = 39)]
-        public string Filler => "                                       ";
+        private string Filler => "                                       ";
     }
 
     public class BatchHeaderRecordList

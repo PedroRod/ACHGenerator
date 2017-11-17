@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using ACHGenerator.CustomAttributes;
 using ACHGenerator.DTO;
 
@@ -8,26 +9,126 @@ namespace ACHGenerator
 {
     public class ACHFileGenerator
     {
+        private static readonly string FillerLine =
+            "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999";
+
         public IEnumerable<string> GenerateACH(ACHTransaction transaction)
         {
-            var achFile = new List<string>
+            var achLines = new List<string>
             {
                 GenerateRecordLine(transaction.FileHeaderRecord)
             };
 
             foreach (var batchHeaderRecord in transaction.BatchHeaderRecords)
             {
-                achFile.Add(GenerateRecordLine(batchHeaderRecord.BatchHeaderRecord));
+                achLines.Add(GenerateRecordLine(batchHeaderRecord.BatchHeaderRecord));
 
-                achFile.AddRange(batchHeaderRecord.EntryDetailRecords
+                achLines.AddRange(batchHeaderRecord.EntryDetailRecords
                     .Select(entryDetailRecord => GenerateRecordLine(entryDetailRecord)));
 
-                achFile.Add(GenerateRecordLine(batchHeaderRecord.BatchControlRecord));
+                achLines.Add(batchHeaderRecord.BatchControlRecord == null
+                    ? GenerateRecordLine(GenerateBatchControlRecord(batchHeaderRecord))
+                    : GenerateRecordLine(batchHeaderRecord.BatchControlRecord));
             }
 
-            achFile.Add(GenerateRecordLine(transaction.FileControlRecord));
 
-            return achFile;
+            if (transaction.FileControlRecord == null)
+            {
+                transaction.FileControlRecord = GenerateFileControlRecord(transaction);
+            }
+
+            var fillerLinesToAdd = CalculateFillerLines(transaction, achLines);
+
+            achLines.Add(GenerateRecordLine(transaction.FileControlRecord));
+
+
+            achLines.AddRange(
+                Enumerable.Repeat(FillerLine, fillerLinesToAdd).ToArray());
+
+            return achLines;
+        }
+
+        private BatchControl GenerateBatchControlRecord(BatchHeaderRecordList batchHeaderRecord)
+        {
+            return new BatchControl
+            {
+                BatchNumber = batchHeaderRecord.BatchHeaderRecord.BatchNumber,
+
+                CompanyIdentification = batchHeaderRecord.BatchHeaderRecord.CompanyIdentification,
+
+                EntryCount = batchHeaderRecord.EntryDetailRecords.Count(),
+                //Calculate Hash from all the entry detail records 
+                //and assign it to the Batch Control Record's "Entry Hash"
+                EntryHash = CapHashToMaxSize(CalculateEntryHash(batchHeaderRecord.EntryDetailRecords)),
+
+                ODFIIdentification = batchHeaderRecord.BatchHeaderRecord.ODFIIdentification,
+
+                ServiceCode = batchHeaderRecord.BatchHeaderRecord.ServiceCode,
+                //Sum of all the credit in the batch
+                TotalCreditEntryDollarAmount = SumTotalCreditAmount(batchHeaderRecord.EntryDetailRecords),
+                //Sum of all the debit in the batch
+                TotalDebitEntryDollarAmount = SumTotalDebitAmount(batchHeaderRecord.EntryDetailRecords)
+            };
+        }
+
+        private FileControl GenerateFileControlRecord(ACHTransaction transaction)
+        {
+            return new FileControl
+            {
+                //Sum all the entryDetailRecords in the transaction
+                EntryCount =
+                    transaction.BatchHeaderRecords.Sum(b => b.EntryDetailRecords.Count()),
+                TotalCreditEntryAmount =
+                    transaction.BatchHeaderRecords.Sum(b => SumTotalCreditAmount(b.EntryDetailRecords)),
+                TotalDebitEntryAmount =
+                    transaction.BatchHeaderRecords.Sum(b => SumTotalDebitAmount(b.EntryDetailRecords)),
+                //Sum all the batch records in the transaction
+                BatchCount = transaction.BatchHeaderRecords.Count(),
+                //Sum of all the entry hashes in the transaction
+                EntryHash = CapHashToMaxSize(transaction.BatchHeaderRecords
+                    .Sum(b => CalculateEntryHash(b.EntryDetailRecords)))
+            };
+        }
+
+        private static int CalculateFillerLines(ACHTransaction transaction, List<string> achLines)
+        {
+            /*Block count is the amount of lines in the ACH file divided by 10
+            The number of line sin the file must be divisible by 10
+            If its not, we add lines of all 9's (Filler lines)*/
+            var fillerLinesToAdd = 0;
+
+            //Number of lines we currently have in the file
+            var numberOfLinesInFile = achLines.Count + 1;
+
+            if (numberOfLinesInFile % 10 == 0)
+            {
+                transaction.FileControlRecord.BlockCount = numberOfLinesInFile / 10;
+                return fillerLinesToAdd;
+            }
+
+            while (numberOfLinesInFile % 10 != 0)
+            {
+                fillerLinesToAdd++;
+                numberOfLinesInFile++;
+            }
+
+            transaction.FileControlRecord.BlockCount = numberOfLinesInFile / 10;
+
+            return fillerLinesToAdd;
+        }
+
+        private decimal SumTotalDebitAmount(IEnumerable<EntryDetail> entryDetails)
+        {
+            return entryDetails.Where(e => e.TransactionCode == 
+                (int)ACHTransactionCode.DebitToChecking || e.TransactionCode == (int)ACHTransactionCode.DebitToSavings)
+                .Sum(e => e.Amount);
+        }
+
+        private decimal SumTotalCreditAmount(IEnumerable<EntryDetail> entryDetails)
+        {
+            return entryDetails.Where(e => e.TransactionCode ==
+                (int)ACHTransactionCode.CreditToChecking || e.TransactionCode == (int)ACHTransactionCode.CreditToSavings)
+                .Sum(e => e.Amount);
         }
 
         public string GenerateRecordLine<T>(T record) where T : IACHRecord
@@ -35,7 +136,8 @@ namespace ACHGenerator
             //Every Record Line is 94 characters long Max
             var recordLine = string.Empty;
 
-            foreach (var recordProperty in record.GetType().GetProperties())
+            foreach (var recordProperty in record.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
             {
                 var attribute = recordProperty.
                     GetCustomAttributes(typeof(ACHField), true).FirstOrDefault() as ACHField;
@@ -158,6 +260,22 @@ namespace ACHGenerator
             }
 
             return recordLine;
+        }
+
+        private int CalculateEntryHash(IEnumerable<EntryDetail> entryDetailRecords)
+        {
+            return entryDetailRecords.Sum(e => e.RDFIIdentification);
+        }
+
+        private int CapHashToMaxSize(int hash)
+        {
+            //all hashes in ACH are 10 digits long max, 
+            //so we will lop off the most significant digits until we reach a minimum of 10 digits.
+            var hashString = hash.ToString();
+
+            return hashString.Length > 10 ? 
+                Convert.ToInt32(hashString.Substring(hashString.Length, -10)) : 
+                hash;
         }
     }
 }
