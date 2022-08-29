@@ -24,7 +24,7 @@ namespace ACHGenerator
                 achLines.Add(GenerateRecordLine(batchHeaderRecord.BatchHeaderRecord));
 
                 achLines.AddRange(batchHeaderRecord.EntryDetailRecords
-                    .Select(entryDetailRecord => GenerateRecordLine(entryDetailRecord)));
+                    .Select(GenerateRecordLine));
 
                 achLines.Add(batchHeaderRecord.BatchControlRecord == null
                     ? GenerateRecordLine(GenerateBatchControlRecord(batchHeaderRecord))
@@ -222,7 +222,7 @@ namespace ACHGenerator
 
                         var propertyValue = (DateTime)recordProperty.GetValue(record);
 
-                        //All Date and Times must be formated, apply formating
+                        //All Date and Times must be formatted, apply formatting
                         recordLine = recordLine.Insert(attribute.Position - 1,
                             propertyValue.ToString(attribute.Format));
 

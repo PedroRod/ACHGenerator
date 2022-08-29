@@ -1,5 +1,4 @@
-﻿using System;
-using ACHGenerator;
+﻿using ACHGenerator;
 using ACHGenerator.DTO;
 using NUnit.Framework;
 
