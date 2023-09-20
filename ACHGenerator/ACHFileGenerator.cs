@@ -249,7 +249,7 @@ namespace ACHGenerator
                             //If the length of the number string is less than the 
                             //required field length, post-pend with white space until correct length has been reached.
                             //(Alphanumeric Rule)
-                            propertyValue = propertyValue.Insert(propertyValue.Length, " ");
+                            propertyValue = propertyValue.PadRight(attribute.Length, ' ');
                         }
 
                         recordLine = recordLine.Insert(attribute.Position - 1, propertyValue);
