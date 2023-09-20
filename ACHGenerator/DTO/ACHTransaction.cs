@@ -12,10 +12,10 @@ namespace ACHGenerator.DTO
         [ACHField(Position = 2, Length = 2)]
         private string PriorityCode => "01";
 
-        [ACHField(Position = 4, Length = 10, Format = " {0}")]
+        [ACHField(Position = 4, Length = 10, Format = "{0}")]
         public string ImmidiateDestination { get; set; }
 
-        [ACHField(Position = 14, Length = 10, Format = " {0}")]
+        [ACHField(Position = 14, Length = 10, Format = "{0}")]
         public string ImmidiateOrigin { get; set; }
 
         [ACHField(Position = 24, Length = 6, Format = "yyMMdd")]

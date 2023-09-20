@@ -26,7 +26,29 @@ namespace UnitTests
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
             Assert.AreEqual(line,
-                "101 121140399 1234567891709151230A094101Bank Of America        Pedro's Bank           00001235");
+                "101121140399 123456789 1709151230A094101Bank Of America        Pedro's Bank           00001235");
+        }
+        
+        [Test]
+        public void CanGenerateFileHeaderRecordForTenDigits()
+        {
+            var generator = new ACHFileGenerator();
+
+            var fileHeaderRecord = new FileHeader
+                {
+                    ImmidiateDestination = "121140399I",
+                    ImmidiateOrigin = "123456789B",
+                    FileCreationDate = new DateTime(2017,9,15,12,30,15),
+                    FileCreationTime = new DateTime(2017, 9, 15, 12, 30, 15),
+                    ImmediateDestinationName = "Bank Of America",
+                    ImmediateOriginName = "Pedro's Bank",
+                    ReferenceCode = 1235
+                };
+
+            var line = generator.GenerateRecordLine(fileHeaderRecord);
+
+            Assert.AreEqual(line,
+                "101121140399I123456789B1709151230A094101Bank Of America        Pedro's Bank           00001235");
         }
 
         [Test]
