@@ -12,6 +12,9 @@ namespace ACHGenerator
         private static readonly string FillerLine =
             "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
+        public char ImmidiateDestinationFiller { get; set; } = ' ';
+        public char ImmidiateOriginFiller { get; set; } = ' ';
+
         public IEnumerable<string> GenerateACH(ACHTransaction transaction)
         {
             var achLines = new List<string>
@@ -249,7 +252,18 @@ namespace ACHGenerator
                             //If the length of the number string is less than the 
                             //required field length, post-pend with white space until correct length has been reached.
                             //(Alphanumeric Rule)
-                            propertyValue = propertyValue.PadRight(attribute.Length, ' ');
+
+                            propertyValue = recordProperty.Name switch
+                            {
+                                // Determine which filler to use based on the property name
+                                // Different banks have different rules for what filler to use
+                                nameof(FileHeader.ImmidiateOrigin) => 
+                                    propertyValue.Insert(0, ImmidiateOriginFiller.ToString()),
+                                nameof(FileHeader.ImmidiateDestination) => 
+                                    propertyValue.Insert(0, ImmidiateDestinationFiller.ToString()),
+                                _ => 
+                                    propertyValue.Insert(propertyValue.Length, " ")
+                            };
                         }
 
                         recordLine = recordLine.Insert(attribute.Position - 1, propertyValue);
