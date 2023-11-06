@@ -137,7 +137,7 @@ namespace ACHGenerator.DTO
         public int EntryCount { get; set; }
 
         [ACHField(Position = 11, Length = 10)]
-        public int EntryHash { get; set; }
+        public long EntryHash { get; set; }
 
         [ACHField(Position = 21, Length = 12, Format = "0.00")]
         public decimal TotalDebitEntryDollarAmount { get; set; }
@@ -176,7 +176,7 @@ namespace ACHGenerator.DTO
         public int EntryCount { get; set; }
 
         [ACHField(Position = 22, Length = 10)]
-        public int EntryHash { get; set; }
+        public long EntryHash { get; set; }
 
         [ACHField(Position = 32, Length = 12, Format = "0.00")]
         public decimal TotalDebitEntryAmount { get; set; }

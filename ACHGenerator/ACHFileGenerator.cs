@@ -276,12 +276,12 @@ namespace ACHGenerator
             return recordLine;
         }
 
-        private int CalculateEntryHash(IEnumerable<EntryDetail> entryDetailRecords)
+        private long CalculateEntryHash(IEnumerable<EntryDetail> entryDetailRecords)
         {
             return entryDetailRecords.Sum(e => e.RDFIIdentification);
         }
 
-        private int CapHashToMaxSize(int hash)
+        private long CapHashToMaxSize(long hash)
         {
             //all hashes in ACH are 10 digits long max, 
             //so we will lop off the most significant digits until we reach a minimum of 10 digits.
