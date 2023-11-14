@@ -98,7 +98,7 @@ namespace ACHGenerator.DTO
         public int TransactionCode { get; set; }
 
         [ACHField(Position = 4, Length = 8)]
-        public int RDFIIdentification { get; set; }
+        public long RDFIIdentification { get; set; }
 
         [ACHField(Position = 12, Length = 1)]
         public int CheckDigit { get; set; }
