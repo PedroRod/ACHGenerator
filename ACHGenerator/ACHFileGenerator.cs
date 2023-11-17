@@ -215,6 +215,28 @@ namespace ACHGenerator
 
                         break;
                     }
+                    case "Int64":
+                        {
+                            var propertyValue = (long)recordProperty.GetValue(record);
+                            var valueAsString = string.IsNullOrEmpty(attribute.Format)
+                                ? propertyValue.ToString()
+                                : propertyValue.ToString(attribute.Format);
+                            if (valueAsString.Length > attribute.Length)
+                            {
+                                throw new Exception($"Property '{recordProperty.Name}' in" +
+                                                    $" '{record.GetType().Name}' has an invalid length, " +
+                                                    $"should be ({attribute.Length}) and is ({valueAsString.Length}).");
+                            }
+                            while (valueAsString.Length < attribute.Length)
+                            {
+                                //If the length of the number string is less than the 
+                                //required field length, pre-pend with 0's until correct length has been reached.
+                                //(Numeric Rule)
+                                valueAsString = valueAsString.Insert(0, "0");
+                            }
+                            recordLine = recordLine.Insert(attribute.Position - 1, valueAsString);
+                            break;
+                        }
                     case "DateTime":
                     {
                         if (attribute.Format == null)
@@ -276,12 +298,12 @@ namespace ACHGenerator
             return recordLine;
         }
 
-        private int CalculateEntryHash(IEnumerable<EntryDetail> entryDetailRecords)
+        private long CalculateEntryHash(IEnumerable<EntryDetail> entryDetailRecords)
         {
             return entryDetailRecords.Sum(e => e.RDFIIdentification);
         }
 
-        private int CapHashToMaxSize(int hash)
+        private long CapHashToMaxSize(long hash)
         {
             //all hashes in ACH are 10 digits long max, 
             //so we will lop off the most significant digits until we reach a minimum of 10 digits.
