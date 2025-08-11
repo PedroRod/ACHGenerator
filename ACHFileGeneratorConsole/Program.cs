@@ -86,3 +86,4 @@ var achFileGenerator = new ACHFileGenerator();
 var achLines = achFileGenerator.GenerateACH(achTransaction);
 
 File.WriteAllLines("ACH.txt", achLines);
+Console.WriteLine("ACH File Generated");

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using ACHGenerator.CustomAttributes;
 using ACHGenerator.DTO;
 
@@ -9,8 +6,7 @@ namespace ACHGenerator
 {
     public class ACHFileGenerator
     {
-        private static readonly string FillerLine =
-            "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999";
+        private const string FillerLine = "9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999";
 
         public char ImmidiateDestinationFiller { get; set; } = ' ';
         public char ImmidiateOriginFiller { get; set; } = ' ';
@@ -34,11 +30,7 @@ namespace ACHGenerator
                     : GenerateRecordLine(batchHeaderRecord.BatchControlRecord));
             }
 
-
-            if (transaction.FileControlRecord == null)
-            {
-                transaction.FileControlRecord = GenerateFileControlRecord(transaction);
-            }
+            transaction.FileControlRecord ??= GenerateFileControlRecord(transaction);
 
             var fillerLinesToAdd = CalculateFillerLines(transaction, achLines);
 
@@ -60,7 +52,7 @@ namespace ACHGenerator
                 CompanyIdentification = batchHeaderRecord.BatchHeaderRecord.CompanyIdentification,
 
                 EntryCount = batchHeaderRecord.EntryDetailRecords.Count(),
-                //Calculate Hash from all the entry detail records 
+                //Calculate Hash from all the entry detail records
                 //and assign it to the Batch Control Record's "Entry Hash"
                 EntryHash = CapHashToMaxSize(CalculateEntryHash(batchHeaderRecord.EntryDetailRecords)),
 
@@ -122,7 +114,7 @@ namespace ACHGenerator
 
         private decimal SumTotalDebitAmount(IEnumerable<EntryDetail> entryDetails)
         {
-            return entryDetails.Where(e => e.TransactionCode == 
+            return entryDetails.Where(e => e.TransactionCode ==
                 (int)ACHTransactionCode.DebitToChecking || e.TransactionCode == (int)ACHTransactionCode.DebitToSavings)
                 .Sum(e => e.Amount);
         }
@@ -138,18 +130,28 @@ namespace ACHGenerator
         {
             //Every Record Line is 94 characters long Max
             var recordLine = string.Empty;
+            var recordProperties = record.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                .Select(p => new
+                {
+                    Property = p,
+                    Attribute = p.GetCustomAttributes(typeof(ACHField), true).FirstOrDefault() as ACHField
+                })
+                .Where(p => p.Attribute != null)
+                .OrderBy(p => p.Attribute.Position)
+                .ToList();
 
-            foreach (var recordProperty in record.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (var recordProperty in recordProperties)
             {
-                var attribute = recordProperty.
-                    GetCustomAttributes(typeof(ACHField), true).FirstOrDefault() as ACHField;
+                var attribute = recordProperty.Attribute;
+                var property = recordProperty.Property;
 
-                if (attribute == null)
-                    throw new Exception($"Property '{recordProperty.Name}' in " +
-                                        $"'{record.GetType().Name}' does not have the required 'ACHField' attribute.");
+                if (attribute is null || property is null)
+                {
+                    throw new Exception("Property or attribute is null");
+                }
 
-                switch (recordProperty.PropertyType.Name)
+                switch (property.PropertyType.Name)
                 {
                     //If the property type is decimal, it's money and ACH has special rules for currency
                     case "Decimal":
@@ -157,11 +159,11 @@ namespace ACHGenerator
                         if (string.IsNullOrEmpty(attribute.Format))
                         {
                             throw new Exception
-                            ($"Property '{recordProperty.Name}' in '{record.GetType().Name}' " +
+                            ($"Property '{property.Name}' in '{record.GetType().Name}' " +
                              "must have 'Format' attribute parameter since is currency.");
                         }
 
-                        var propertyValue = (decimal)recordProperty.GetValue(record);
+                        var propertyValue = (decimal)property.GetValue(record)!;
 
                         var valueAsString = propertyValue.ToString(attribute.Format);
 
@@ -170,14 +172,14 @@ namespace ACHGenerator
 
                         if (valueAsString.Length > attribute.Length)
                         {
-                            throw new Exception($"Property '{recordProperty.Name}' in" +
+                            throw new Exception($"Property '{property.Name}' in" +
                                                 $" '{record.GetType().Name}' has an invalid length, " +
                                                 $"should be ({attribute.Length}) and is ({valueAsString.Length}).");
                         }
 
                         while (valueAsString.Length < attribute.Length)
                         {
-                            //If the length of the currency string is less than the 
+                            //If the length of the currency string is less than the
                             //required field length, pre-pend with 0's until correct length has been reached.
                             //(Numeric Rule)
                             valueAsString = valueAsString.Insert(0, "0");
@@ -190,7 +192,7 @@ namespace ACHGenerator
                     }
                     case "Int32":
                     {
-                        var propertyValue = (int)recordProperty.GetValue(record);
+                        var propertyValue = (int)property.GetValue(record)!;
 
                         var valueAsString = string.IsNullOrEmpty(attribute.Format)
                             ? propertyValue.ToString()
@@ -198,14 +200,14 @@ namespace ACHGenerator
 
                         if (valueAsString.Length > attribute.Length)
                         {
-                            throw new Exception($"Property '{recordProperty.Name}' in" +
+                            throw new Exception($"Property '{property.Name}' in" +
                                                 $" '{record.GetType().Name}' has an invalid length, " +
                                                 $"should be ({attribute.Length}) and is ({valueAsString.Length}).");
                         }
 
                         while (valueAsString.Length < attribute.Length)
                         {
-                                //If the length of the number string is less than the 
+                                //If the length of the number string is less than the
                                 //required field length, pre-pend with 0's until correct length has been reached.
                                 //(Numeric Rule)
                             valueAsString = valueAsString.Insert(0, "0");
@@ -217,19 +219,19 @@ namespace ACHGenerator
                     }
                     case "Int64":
                         {
-                            var propertyValue = (long)recordProperty.GetValue(record);
+                            var propertyValue = (long)property.GetValue(record)!;
                             var valueAsString = string.IsNullOrEmpty(attribute.Format)
                                 ? propertyValue.ToString()
                                 : propertyValue.ToString(attribute.Format);
                             if (valueAsString.Length > attribute.Length)
                             {
-                                throw new Exception($"Property '{recordProperty.Name}' in" +
+                                throw new Exception($"Property '{property.Name}' in" +
                                                     $" '{record.GetType().Name}' has an invalid length, " +
                                                     $"should be ({attribute.Length}) and is ({valueAsString.Length}).");
                             }
                             while (valueAsString.Length < attribute.Length)
                             {
-                                //If the length of the number string is less than the 
+                                //If the length of the number string is less than the
                                 //required field length, pre-pend with 0's until correct length has been reached.
                                 //(Numeric Rule)
                                 valueAsString = valueAsString.Insert(0, "0");
@@ -241,11 +243,11 @@ namespace ACHGenerator
                     {
                         if (attribute.Format == null)
                         {
-                            throw new Exception($"Property '{recordProperty.Name}' in" +
+                            throw new Exception($"Property '{property.Name}' in" +
                                                 $" '{record.GetType().Name}' is of 'DateTime' type and must contain a 'Format' attribute parameter.");
                         }
 
-                        var propertyValue = (DateTime)recordProperty.GetValue(record);
+                        var propertyValue = (DateTime)property.GetValue(record)!;
 
                         //All Date and Times must be formatted, apply formatting
                         recordLine = recordLine.Insert(attribute.Position - 1,
@@ -255,40 +257,43 @@ namespace ACHGenerator
                     }
                     case "String":
                     {
-                        var propertyValue = (string)recordProperty.GetValue(record);
+                        var propertyValue = (string)property.GetValue(record);
 
                         if (!string.IsNullOrEmpty(attribute.Format))
                         {
                             propertyValue = string.Format(attribute.Format, propertyValue);
                         }
 
-                        if (propertyValue.Length > attribute.Length)
+                        if (propertyValue != null)
                         {
-                            throw new Exception($"Property '{recordProperty.Name}' in" +
-                                                $" '{record.GetType().Name}' has an invalid length, " +
-                                                $"should be ({attribute.Length}) and is ({propertyValue.Length}).");
-                        }
-
-                        while (propertyValue.Length < attribute.Length)
-                        {
-                            //If the length of the number string is less than the 
-                            //required field length, post-pend with white space until correct length has been reached.
-                            //(Alphanumeric Rule)
-
-                            propertyValue = recordProperty.Name switch
+                            if (propertyValue.Length > attribute.Length)
                             {
-                                // Determine which filler to use based on the property name
-                                // Different banks have different rules for what filler to use
-                                nameof(FileHeader.ImmidiateOrigin) => 
-                                    propertyValue.Insert(0, ImmidiateOriginFiller.ToString()),
-                                nameof(FileHeader.ImmidiateDestination) => 
-                                    propertyValue.Insert(0, ImmidiateDestinationFiller.ToString()),
-                                _ => 
-                                    propertyValue.Insert(propertyValue.Length, " ")
-                            };
-                        }
+                                throw new Exception($"Property '{property.Name}' in" +
+                                                    $" '{record.GetType().Name}' has an invalid length, " +
+                                                    $"should be ({attribute.Length}) and is ({propertyValue.Length}).");
+                            }
 
-                        recordLine = recordLine.Insert(attribute.Position - 1, propertyValue);
+                            while (propertyValue.Length < attribute.Length)
+                            {
+                                //If the length of the number string is less than the
+                                //required field length, post-pend with white space until correct length has been reached.
+                                //(Alphanumeric Rule)
+
+                                propertyValue = property.Name switch
+                                {
+                                    // Determine which filler to use based on the property name
+                                    // Different banks have different rules for what filler to use
+                                    nameof(FileHeader.ImmidiateOrigin) =>
+                                        propertyValue.Insert(0, ImmidiateOriginFiller.ToString()),
+                                    nameof(FileHeader.ImmidiateDestination) =>
+                                        propertyValue.Insert(0, ImmidiateDestinationFiller.ToString()),
+                                    _ =>
+                                        propertyValue.Insert(propertyValue.Length, " ")
+                                };
+                            }
+
+                            recordLine = recordLine.Insert(attribute.Position - 1, propertyValue);
+                        }
 
                         break;
                     }
@@ -305,12 +310,12 @@ namespace ACHGenerator
 
         private long CapHashToMaxSize(long hash)
         {
-            //all hashes in ACH are 10 digits long max, 
+            //all hashes in ACH are 10 digits long max,
             //so we will lop off the most significant digits until we reach a minimum of 10 digits.
             var hashString = hash.ToString();
 
-            return hashString.Length > 10 ? 
-                Convert.ToInt32(hashString.Substring(hashString.Length, -10)) : 
+            return hashString.Length > 10 ?
+                Convert.ToInt32(hashString.Substring(hashString.Length, -10)) :
                 hash;
         }
     }

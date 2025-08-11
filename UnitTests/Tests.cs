@@ -25,10 +25,9 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
-            Assert.AreEqual(line,
-                "101 121140399 1234567891709151230A094101Bank Of America        Pedro's Bank           00001235");
+            Assert.That(line, Is.EqualTo("101 121140399 1234567891709151230A094101Bank Of America        Pedro's Bank           00001235"));
         }
-        
+
         [Test]
         public void CanGenerateFileHeaderRecordWithTenDigitOrigin()
         {
@@ -47,10 +46,9 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
-            Assert.AreEqual(line,
-                "101 12114039912345678891709151230A094101Bank Of America        Pedro's Bank           00001235");
+            Assert.That(line, Is.EqualTo("101 12114039912345678891709151230A094101Bank Of America        Pedro's Bank           00001235"));
         }
-        
+
         [Test]
         public void CanGenerateFileHeaderRecordWithDifferentPadding()
         {
@@ -73,10 +71,9 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
-            Assert.AreEqual(line,
-                "101b121140399b1234567891709151230A094101Bank Of America        Pedro's Bank           00001235");
+            Assert.That(line, Is.EqualTo("101b121140399b1234567891709151230A094101Bank Of America        Pedro's Bank           00001235"));
         }
-        
+
         [Test]
         public void CanGenerateFileHeaderRecordWithImmidiateOriginDifferentPadding()
         {
@@ -98,10 +95,9 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
-            Assert.AreEqual(line,
-                "101 121140399b1234567891709151230A094101Bank Of America        Pedro's Bank           00001235");
+            Assert.That(line, Is.EqualTo("101 121140399b1234567891709151230A094101Bank Of America        Pedro's Bank           00001235"));
         }
-        
+
         [Test]
         public void CanGenerateFileHeaderRecordWithImmidiateDestinationDifferentPadding()
         {
@@ -123,8 +119,7 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileHeaderRecord);
 
-            Assert.AreEqual(line,
-                "101b121140399 1234567891709151230A094101Bank Of America        Pedro's Bank           00001235");
+            Assert.That(line, Is.EqualTo("101b121140399 1234567891709151230A094101Bank Of America        Pedro's Bank           00001235"));
         }
 
         [Test]
@@ -148,8 +143,7 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(batchHeader);
 
-            Assert.AreEqual(line,
-                "5225TestCompName    ForBatchDesc        1234567890PPDPayroll   170915170916   1001234560000000");
+            Assert.That(line, Is.EqualTo("5225TestCompName    ForBatchDesc        1234567890PPDPayroll   170915170916   1001234560000000"));
         }
 
         [Test]
@@ -171,8 +165,7 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(entryDetail);
 
-            Assert.AreEqual(line,
-                "627001234565ABC123BA#        0000150053BCA123         Pedro Rodriguez         0TRCNUM         ");
+            Assert.That(line, Is.EqualTo("627001234565ABC123BA#        0000150053BCA123         Pedro Rodriguez         0TRCNUM         "));
 
         }
 
@@ -195,8 +188,7 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(batchControl);
 
-            Assert.AreEqual(line,
-                "822500000200000124560000001500530000001500531234567890                         001234560000000");
+            Assert.That(line, Is.EqualTo("822500000200000124560000001500530000001500531234567890                         001234560000000"));
 
         }
 
@@ -217,8 +209,7 @@ namespace UnitTests
 
             var line = generator.GenerateRecordLine(fileControl);
 
-            Assert.AreEqual(line,
-                "9000002000001000000010000000002000000150053000000150053                                       ");
+            Assert.That(line, Is.EqualTo("9000002000001000000010000000002000000150053000000150053                                       "));
 
         }
     }
